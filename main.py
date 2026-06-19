@@ -59,6 +59,41 @@ def get_contacts(supabase: Client) -> list:
 
     return response.data
 
+def send_message(phone: str, message: str) -> None:
+    """
+    Envia uma mensagem utilizando a Z-API.
+    """
+
+    url = (
+        f"https://api.z-api.io/instances/{ZAPI_INSTANCE_ID}"
+        f"/token/{ZAPI_TOKEN}/send-text"
+    )
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "phone": phone,
+        "message": message
+    }
+
+    response = requests.post(
+        url,
+        json=payload,
+        headers=headers
+    )
+
+    if response.status_code >= 400:
+        logging.error(
+            f"Erro ao enviar mensagem para {phone}"
+        )
+        return
+
+    logging.info(
+        f"Mensagem enviada para {phone}"
+    )
+
 
 def main() -> None:
     """
