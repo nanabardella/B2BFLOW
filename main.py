@@ -32,7 +32,6 @@ ZAPI_INSTANCE_ID = os.getenv("ZAPI_INSTANCE_ID")
 ZAPI_TOKEN = os.getenv("ZAPI_TOKEN")
 ZAPI_CLIENT_TOKEN = os.getenv("ZAPI_CLIENT_TOKEN")
 
-
 def create_supabase_client() -> Client:
     """
     Cria a conexão com o Supabase.
@@ -59,10 +58,14 @@ def get_contacts(supabase: Client) -> list:
 
     return response.data
 
+
 def send_message(phone: str, message: str) -> None:
     """
     Envia uma mensagem utilizando a Z-API.
     """
+
+    if not ZAPI_INSTANCE_ID or not ZAPI_TOKEN:
+        raise ValueError("ZAPI_INSTANCE_ID e ZAPI_TOKEN são obrigatórios.")
 
     url = (
         f"https://api.z-api.io/instances/{ZAPI_INSTANCE_ID}"
@@ -72,6 +75,9 @@ def send_message(phone: str, message: str) -> None:
     headers = {
         "Content-Type": "application/json"
     }
+
+    if ZAPI_CLIENT_TOKEN:
+        headers["Client-Token"] = ZAPI_CLIENT_TOKEN
 
     payload = {
         "phone": phone,
@@ -85,28 +91,37 @@ def send_message(phone: str, message: str) -> None:
     )
 
     if response.status_code >= 400:
-        logging.error(
-            f"Erro ao enviar mensagem para {phone}"
-        )
+        logging.error(f"Erro ao enviar mensagem para {phone}: {response.text}")
         return
 
-    logging.info(
-        f"Mensagem enviada para {phone}"
-    )
+    logging.info(f"Mensagem enviada para {phone}")
 
 
 def main() -> None:
     """
-    Função principal usada para buscar os contatos no Supabase.
+    Função principal da aplicação.
     """
 
     supabase = create_supabase_client()
-
     contacts = get_contacts(supabase)
 
     logging.info(f"{len(contacts)} contato(s) encontrado(s).")
 
-    print(contacts)
+    if not contacts:
+        logging.info("Nenhum contato encontrado.")
+        return
+
+    for contact in contacts:
+        name = contact.get("nome_contato")
+        phone = contact.get("telefone")
+
+        if not name or not phone:
+            logging.warning("Contato ignorado por falta de nome ou telefone.")
+            continue
+
+        message = f"Olá, {name} tudo bem com você?"
+
+        send_message(phone, message)
 
 
 if __name__ == "__main__":
