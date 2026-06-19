@@ -4,6 +4,9 @@ import os
 # Biblioteca usada para exibir mensagens de log no terminal
 import logging
 
+# Biblioteca usada para fazer requisições HTTP para APIs externas
+import requests
+
 # Biblioteca que carrega as variáveis do arquivo .env
 from dotenv import load_dotenv
 
@@ -23,6 +26,11 @@ logging.basicConfig(
 # Dados do Supabase vindos do .env
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+# Dados da Z-API vindos do .env
+ZAPI_INSTANCE_ID = os.getenv("ZAPI_INSTANCE_ID")
+ZAPI_TOKEN = os.getenv("ZAPI_TOKEN")
+ZAPI_CLIENT_TOKEN = os.getenv("ZAPI_CLIENT_TOKEN")
 
 
 def create_supabase_client() -> Client:
